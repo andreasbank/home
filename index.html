@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Home (mockup)</title>
+  <link rel="stylesheet" href="style.css" type="text/css" />
+  <script type="text/javascript" src="helpers.js"></script>
+  <script type="text/javascript" src="classes.js"></script>
+  <script type="text/javascript" src="ajax.js"></script>
+</head>
+<body>
+<script type="text/javascript">
+  <!--
+
+  var portalsRequestIndicator = null;
+  var portalsPointer = null;
+  var portals = null;
+
+  var loggedInUserInfoRequestIndicator = null;
+  var loggedInUserInfoPointer = null;
+  var loggedInUser = null;
+
+  function setPortals(result_portals) {
+    portals = result_portals;
+  }
+
+  function refreshPortals() {
+    portalsObjectPointer = { innerObject: new Array() };
+    portalsRequestIndicator = new RequestIndicator();
+    ajaxXml('getPortalsWithBookings', 'responseType=xml', portalsRequestIndicator, portalsPointer, setPortals);
+  }
+
+  function setLoggedInUserInfo(result) {
+    loggedInUser = result[0];
+    document.getElementById('loggedInUserTag').innerHTML = loggedInUser.fullName;
+  }
+
+  function getLoggedInUserInfo() {
+    loggedInUserInfoPointer = { innerObject: new Array() };
+    loggedInUserInfoRequestIndicator = new RequestIndicator();
+    ajaxXml('getLoggedInUserInfo', 'responseType=xml', loggedInUserInfoRequestIndicator, loggedInUserInfoPointer, setLoggedInUserInfo);
+  }
+
+  var session_id = getCookie('axis-home');
+  if(null != session_id) {
+    document.write("<p>Logged in as <span id=\"loggedInUserTag\">(fetching info...)</span></p>\n");
+    document.write("\t<form method=\"post\" action=\"api.php\">\n");
+    document.write("\t<input name=\"action\" type=\"hidden\" value=\"do_logout\" />\n");
+    document.write("\t<input type=\"submit\" value=\"Logout!\">\n");
+    document.write("</form>\n");
+    getLoggedInUserInfo();
+  }
+  else {
+    document.write("<form method=\"post\" action=\"api.php\">\n");
+    document.write("<input name=\"action\" type=\"hidden\" value=\"do_login\" />\n");
+    document.write("<table>\n");
+    document.write("\t<tr>\n");
+    document.write("\t\t<td>user:</td>\n");
+    document.write("\t\t<td><input name=\"username\" type=\"text\" value=\"\" /></td>\n");
+    document.write("\t\t<td rowspan=\"2\"><input style=\"height:100%;\" type=\"submit\" value=\"Login!\" /></td>\n");
+    document.write("\t</tr>\n");
+    document.write("\t<tr>\n");
+    document.write("\t\t<td>pass:</td>\n");
+    document.write("\t\t<td><input name=\"password\" type=\"password\" value=\"\" /></td>\n");
+    document.write("\t</tr>\n");
+    document.write("</table>\n");
+    document.write("</form>\n");
+  }
+
+  -->
+</script>
+</body>
+</html>
+

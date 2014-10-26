@@ -1,0 +1,272 @@
+html, body {
+	color: rgb(51, 102, 204);
+	font-size: 13px;
+	font-family: verdana,arial,helvetica,sans-serif;
+	background: white;
+}
+.axisColor {
+	color: rgb(51, 102, 204);
+}
+table.tightTable {
+	padding: 0;
+	border-spacing: 0;
+	border-collapse: collapse;
+	overflow: hidden;
+}
+table.tightTable td, table.tightTable th {
+	padding: 0;
+}
+a {
+	color: rgb(51, 102, 204);
+}
+.msgBoxBkg {
+	opacity: 0.0;
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 100%;
+	background: rgba(0,0,0,0.6);
+	-ms-filter:"progid:DXImageTransform.Microsoft.gradient(startColorstr=#99000000, endColorstr=#99000000)";
+}
+.msgBox {
+	border-top-left-radius:5px;
+	border-top-right-radius:25px;
+	border-bottom-left-radius:25px;
+	border-bottom-right-radius:5px;
+	position:absolute;
+	padding:2em;
+	top:50%;
+	left:50%;
+	border:solid 1px rgb(204, 204, 204);
+	background-color:white;
+}
+.cursorHelp {
+	cursor: help;
+}
+.cursorPointer {
+	cursor: pointer;
+}
+a:link {
+	text-decoration:none;
+}
+.mainTable {
+	width: 700px;
+	border: solid 1px rgb(204, 204, 204);
+	margin: auto;
+	border-spacing: 0;
+	border-radius:7px;
+	box-shadow: 0px 0px 4px black;
+	overflow: hidden;
+}
+td {
+	padding:1em;
+}
+a.activeMenu {
+	font-weight: bold;
+	color: rgb(102, 102, 102);
+	background-color: rgb(218, 236, 255);
+}
+.mainPage {
+	vertical-align:top;
+}
+.step {
+	font-weight:bold;
+}
+.stepTD {
+	color: black;
+}
+.stepTitle {
+	background-color: rgb(204, 204, 204);
+	padding: .5em;
+	border-radius: 5px;
+	box-shadow: 2px 2px 2px grey;
+}
+.myH1, .myH2, .myH3, .myH4 {
+	font-weight: bold;
+}
+.myH1 {
+	font-size: 18px;
+}
+.myH2 {
+	font-size: 13px;
+}
+.myH3 {
+	font-size: 11px;
+}
+.myH4 {
+	font-size: 10px;
+}
+.myH4normal {
+	font-weight: normal;
+}
+input[type=text], input[type=input], input[type=password], select, .cool {
+	background-color: rgba(51, 102, 204, 0.1);
+	border:none;
+	border-bottom: solid 1px rgb(51, 102, 204);
+	border-radius: 5px;
+}
+input[type=text]:hover, input[type=input]:hover, input.coolButton:hover {
+	background-color: rgba(51, 102, 204, 0.5);
+}
+input[type=text]:active, input[type=input]:active, input.coolButton:active {
+	background-color: rgba(51, 102, 204, 0.8);
+}
+input.coolInput {
+	color: black;
+	font-family: helvetica;
+	border-top: none;
+	border-right: none;
+	border-bottom: solid 1px red;
+	border-left: none;
+}
+input[type=button], input[type=submit], input.coolButton, input[type=button]:active, input[type=submit]:active, input.coolButton:active {
+	background-color: rgba(51, 102, 204, 0.3);
+	border:none;
+	border: solid 1px rgb(51, 102, 204);
+	border-radius: 5px;
+	color: rgb(51, 102, 204);
+	font-weight: bold;
+	box-shadow: 1px 1px 2px gray;
+	margin: .2em;
+}
+input[type=button]:hover, input.coolButton:hover {
+	background-color: rgba(51, 102, 204, 0.5);
+}
+input[type=button]:active, input.coolButton:active {
+	background-color: rgba(51, 102, 204, 0.8);
+}
+.loggPage {
+	height: 5em;
+	overflow: auto;
+	word-break: break-all;
+	border: solid 1px rgb(204, 204, 204);
+}
+#msgBox {
+	border: solid 1px rgb(204, 204, 204);
+	display:none;
+	visibility:visible;
+	opaque:1.0;
+	background-color:white;
+	border-radius:5px;
+	box-shadow:2px 2px 3px black;
+	border:solid 1px red;
+	position:absolute;
+	top:20%;
+	left:35%;
+	height:60%;
+	width: 30%;
+}
+.zeroPadding, .zeroPadding td {
+	border-spacing: 0;
+	padding: 0;
+}
+#previewBox {
+	display: none;
+	border: solid 1px rgb(51, 102, 204);
+	border-radius: 5px;
+	background-color: white;
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-image: url('../images/loading.gif');
+}
+.italic {
+	font-style: italic;
+}
+.bold {
+	font-weight: bold;
+}
+.inline {
+	display: inline;
+}
+.vmiddle {
+	vertical-align: middle;
+}
+.green {
+	color: green;
+}
+.red {
+	color: red;
+}
+.textRight {
+	text-align: right;
+}
+.textLeft {
+	text-align: left;
+}
+.textCenter {
+	text-align: center;
+}
+.border {
+	border: solid 1px red;
+}
+.fullWidth {
+	width: 100%;
+}
+.noDisplay {
+	display: none;
+}
+.width3em {
+	width: 3em;
+}
+.underline {
+	text-decoration:underline;
+}
+#menuRightBorder {
+	width:173px;
+	border-right: solid 1px rgb(204, 204, 204);
+	vertical-align: top;
+}
+#htmlHeader {
+	padding: 0;
+	border-bottom: solid 1px rgb(204, 204, 204);
+}
+#htmlFooter {
+	border-right: solid 1px rgb(204, 204, 204);
+}
+#devicesTable {
+	border-spacing: 0;
+	border-radius: 5px;
+	border: solid 1px rgb(51, 102, 204);
+	margin: auto;
+}
+#devicesTable td {
+	text-shadow: 0px 0px 4px white;
+	border-top: solid 1px rgb(51, 102, 204);
+	padding: .2em;
+	text-align: left;
+	color: black;
+}
+#devicesTable a {
+	text-shadow: 1px 1px 2px black;
+	color: white;
+}
+#devicesTable .oddRow {
+	background-color: rgba(51, 102, 204, 0.7);
+}
+#devicesTable .evenRow {
+	background-color: rgba(51, 102, 204, 0.3);
+}
+#filesTable {
+	border-spacing: 0;
+	border-radius: 5px;
+	border: solid 1px rgb(51, 102, 204);
+	margin: auto;
+}
+#filesTable td {
+	text-shadow: 0px 0px 4px white;
+	border-top: solid 1px rgb(51, 102, 204);
+	padding: .2em;
+	text-align: left;
+	color: black;
+}
+#filesTable a {
+	text-shadow: 1px 1px 2px black;
+	color: white;
+}
+#filesTable .oddRow {
+	background-color: rgba(51, 102, 204, 0.7);
+}
+#filesTable .evenRow {
+	background-color: rgba(51, 102, 204, 0.3);
+}

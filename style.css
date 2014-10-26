@@ -9,24 +9,24 @@ html, body {
   text-align:center;
 }
 
-.green {
+.booked_none {
   background-color:#66CC33;
 }
 
-.blue {
+.booked_own {
   background-color:#3366FF;
   color:white;
 }
 
-.orange {
+.booked {
   background-color:orange;
 }
 
-.red {
+.booked_overdue {
   background-color:red;
 }
 
-.gray {
+.booked_disabled {
   background-color:rgb(200, 200, 200);
 }
 
