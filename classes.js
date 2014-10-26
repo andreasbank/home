@@ -38,8 +38,9 @@ function Portal(id, name, ip_1, ip_2, booking) {
   this.ip_2 = ip_2;
   this.booking = booking;
   this.isOwnBooking = loggedInUser.id == booking.user.id ? true : false;
-  this.display = function (destination_tag) {
-    destination_tag.innetHTML = "\t\t<td class=\"main_table_td\">\n\t\t\t<table border=\"0\" class=\"env_box booked" + (this.booking ? (this.isOwnBooking ? '_own' : '') : '_none') + "\">\n" +
+  this.display = function (destinationTagId) {
+    var destinationTag = document.getElementById(destinationTagId);
+    destinationTag.innetHTML = "\t\t<td class=\"main_table_td\">\n\t\t\t<table border=\"0\" class=\"env_box booked" + (this.booking ? (this.isOwnBooking ? '_own' : '') : '_none') + "\">\n" +
     "\t\t\t\t<tr>\n\t\t\t\t\t<td colspan=\"2\" class=\"env_name\">\n\t\t\t\t\t\t" + this.name + "\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n" +
     "\t\t\t\t<tr>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t" + this.ip_1 + "\n\t\t\t\t\t</td>\n" +
     "\t\t\t\t\t<td rowspan=\"3\" class=\"centered\">\n\t\t\t\t\t\t<input type=\"button\" value=\"Book!\" />\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n" +

@@ -9,11 +9,17 @@ date_default_timezone_set('Europe/Stockholm');
 require('Home.php');
 
 $result = "";
-$action = array_key_exists('action', $_POST) && !empty($_POST['action']) ||
-          array_key_exists('action', $_GET) && !empty($_GET['action']) ||
-          null;
+$action = null;
+
+if(array_key_exists('action', $_POST) && !empty($_POST['action'])) {
+  $action = $_POST['action'];
+}
+elseif(array_key_exists('action', $_GET) && !empty($_GET['action'])) {
+  $action = $_GET['action'];
+}
 
 switch($action) {
+
 case 'getLoggedInUserInfo':
   $user = $home->find_user();
   $result = sprintf("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
@@ -27,7 +33,7 @@ case 'findPortalsWithBookings':
   $result = sprintf("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
   $result = sprintf("%s<portals>\n", $result);
   for($i = 0; $i < count($portals); $i++) {
-    $result = sprintf("%s%s", $result, $portal[$i]->to_xml(false));
+    $result = sprintf("%s%s", $result, $portals[$i]->to_xml(false));
   }
   $result = sprintf("%s</portals>\n", $result);
   break;
@@ -56,6 +62,10 @@ case 'do_logout':
     exit(0);
   }
   header("Location: ./");
+  break;
+
+default:
+  printf('Unrecognized action');
   break;
 
 }

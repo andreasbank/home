@@ -15,6 +15,7 @@
   var portalsRequestIndicator = null;
   var portalsPointer = null;
   var portals = null;
+  var bookedOwnPortals = null;
 
   var loggedInUserInfoRequestIndicator = null;
   var loggedInUserInfoPointer = null;
@@ -22,6 +23,16 @@
 
   function setPortals(result_portals) {
     portals = result_portals;
+    findBookedOwnPortals();
+  }
+
+  function findBookedOwnPortals() {
+    bookedOwnPortals = null;
+    for(var i = 0; i < portals.length; i++) {
+      if(portals[i].booking.user.id == loggedInUser.id) {
+        bookedOwnPortals.push(portals[i]);
+      }
+    }
   }
 
   function refreshPortals() {
@@ -31,6 +42,12 @@
   }
 
   function setLoggedInUserInfo(result) {
+    if(null == result) {
+      setCookie('axis-home', '', -1);
+      alert('Invalid session detected and removed, you need to log in again')
+      window.location = './'
+      return;
+    }
     loggedInUser = result[0];
     document.getElementById('loggedInUserTag').innerHTML = loggedInUser.fullName;
   }
@@ -49,6 +66,7 @@
     document.write("\t<input type=\"submit\" value=\"Logout!\">\n");
     document.write("</form>\n");
     getLoggedInUserInfo();
+    refreshPortals();
   }
   else {
     document.write("<form method=\"post\" action=\"api.php\">\n");

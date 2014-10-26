@@ -9,20 +9,22 @@ date_default_timezone_set('Europe/Stockholm');
 require('Config.php');
 
 class Portal {
+  private $id = null;
   private $name = null;
   private $hosts = null;
   private $booked_user = null;
   private $booked_date = null;
 
-  public function __construct($name, $hosts, $booked_user, $booked_date) {
+  public function __construct($id, $name, $hosts, $booked_user, $booked_date) {
+    $this->id = $id;
     $this->name = $name;
     $this->hosts = $hosts;
     $this->booked_user = $booked_user;
     $this->booked_date = $booked_date;
   }
 
-  public function set_name($name) {
-    $this->name = $name;
+  public function get_id() {
+    return $this->id;
   }
 
   public function get_name() {
@@ -52,14 +54,22 @@ class Portal {
       $xml = sprintf("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
     }
     $xml = sprintf("%s<portal>\n", $xml);
-    $xml = sprintf("%s\t<id>%s</id>\n", $xml, $this->name);
-    $xml = sprintf("%s\t<hosts count=\"%s\">\n", $xml, count($this->hosts));
+    $xml = sprintf("%s\t<id>%s</id>\n", $xml, $this->id);
+    $xml = sprintf("%s\t<name>%s</name>\n", $xml, htmlspecialchars($this->name));
+    $xml = sprintf("%s\t<hosts count=\"%s\">\t", $xml, count($this->hosts));
     for($i = 0; $i < count($this->hosts); $i++) {
       $xml = sprintf("%s\t\t<host>%s</host>\n", $xml, $this->hosts[$i]);
     }
-    $xml = sprintf("%s\t<bookedUser>%s</bookedUser>\n", $xml, $this->booked_user);
+    $xml = sprintf("%s\t</hosts>\n", $xml);
+    $xml = sprintf("%s\t<bookedUser>", $xml);
+    if(null != $this->booked_user) {
+      $xml = sprintf("%s\n\t\t<id>%s</id>\n", $xml, $this->booked_user->get_id());
+      $xml = sprintf("%s\t\t<username>%s</username>\n", $xml, $this->booked_user->get_username());
+      $xml = sprintf("%s\t\t<fullName>%s</fullName>\n\t", $xml, htmlspecialchars($this->booked_user->get_full_name()));
+    }
+    $xml = sprintf("%s</bookedUser>\n", $xml);
     $xml = sprintf("%s\t<bookedDate>%s</bookedDate>\n", $xml, $this->booked_date);
-    $xml = sprintf("%s</user>\n", $xml);
+    $xml = sprintf("%s</portal>\n", $xml);
     return $xml;
   }
 
@@ -80,8 +90,8 @@ class User {
     return $this->id;
   }
 
-  public function get_name() {
-    return $this->name;
+  public function get_username() {
+    return $this->username;
   }
 
   public function get_full_name() {
@@ -96,7 +106,7 @@ class User {
     $xml = sprintf("%s<user>\n", $xml);
     $xml = sprintf("%s\t<id>%s</id>\n", $xml, $this->id);
     $xml = sprintf("%s\t<username>%s</username>\n", $xml, $this->username);
-    $xml = sprintf("%s\t<fullName>%s</fullName>\n", $xml, $this->full_name);
+    $xml = sprintf("%s\t<fullName>%s</fullName>\n", $xml, htmlspecialchars($this->full_name));
     $xml = sprintf("%s</user>\n", $xml);
     return $xml;
   }
@@ -307,7 +317,7 @@ class Home {
       if(null == $user_id) {
         $user_id = $this->find_user_id();
       }
-      $result = $this->query(sprintf("call find_user('%s')", $user_id));
+      $result = $this->query(sprintf("call find_user('%s')", $user_id), true);
       $result = new User($result[0]['id'],
                          $result[0]['username'],
                          $result[0]['full_name']);
@@ -466,7 +476,7 @@ class Home {
     if($result_set_len > 0) {
       for($i = 0; $i < $result_set_len; $i++) {
         $hosts = explode(',', $result_set[$i]['ip']);
-        $result_array[] = new Portal($result_set[$i]['name'], $hosts, null);
+        $result_array[] = new Portal($result_set[$i]['id'], $result_set[$i]['name'], $hosts, null, null);
       }
     }
     return $result_array;
@@ -488,9 +498,14 @@ class Home {
     if($result_set_len > 0) {
       for($i = 0; $i < $result_set_len; $i++) {
         $hosts = explode(',', $result_set[$i]['ip']);
-        $result_array[] = new Portal($result_set[$i]['name'],
+        $user = null;
+        if(null != $result_set[$i]['user_id']) {
+          $user = $this->find_user($result_set[$i]['user_id']);
+        }
+        $result_array[] = new Portal($result_set[$i]['id'],
+                                     $result_set[$i]['name'],
                                      $hosts,
-                                     $result_set[$i]['user_id'],
+                                     $user,
                                      $result_set[$i]['book_date']);
       }
     }
