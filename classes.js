@@ -27,9 +27,9 @@ function User(id, username, fullName) {
   }
 }
 
-function Booking(portal_id, user_id, book_date) {
-  this.portal_id = portal_id;
+function Booking(user_id, portal_id, book_date) {
   this.user_id = user_id;
+  this.portal_id = portal_id;
   this.book_date = book_date;
   this.getUser = function () {
     return getUser(this.user_id);
@@ -41,25 +41,16 @@ function Booking(portal_id, user_id, book_date) {
 }
 
 function Portal(id, name, hosts) {
+  this.id = id;
   this.name = name;
-  this.hosts;
-  this.addHost = function (host) {
-    this.hosts.push(host);
-  }
+  this.hosts = hosts;
   this.getBooking = function () {
     return getPortalBooking(this.id);
+  };
+  this.isOwnBooking = function () {
+    return loggedInUser.id == this.getBooking().getUser().id;
   }
-  this.isOwnBooking = loggedInUser.id == booking.user.id ? true : false;
-  this.display = function (destinationTagId) {
-    var destinationTag = document.getElementById(destinationTagId);
-    destinationTag.innetHTML = "\t\t<td class=\"main_table_td\">\n\t\t\t<table border=\"0\" class=\"env_box booked" + (this.booking ? (this.isOwnBooking ? '_own' : '') : '_none') + "\">\n" +
-    "\t\t\t\t<tr>\n\t\t\t\t\t<td colspan=\"2\" class=\"env_name\">\n\t\t\t\t\t\t" + this.name + "\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n" +
-    "\t\t\t\t<tr>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t" + this.hosts[0] + "\n\t\t\t\t\t</td>\n" +
-    "\t\t\t\t\t<td rowspan=\"3\" class=\"centered\">\n\t\t\t\t\t\t<input type=\"button\" value=\"Book!\" />\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n" +
-    "\t\t\t\t<tr>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t" + (this.hosts[1] ? this.hosts[1] : '&nbsp;') + "\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n" +
-    "\t\t\t\t<tr>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t" + (this.getBooking() ? this.getBooking().getUser().fullName : '&nbsp;') + "\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n" +
-    "\t\t\t</table>\n\t\t</td>\n";
-  }
+
 }
 
 function getPortalBooking(portal_id) {
@@ -81,7 +72,7 @@ function getBooking(user_id, portal_id) {
       break;
     }
   }
-  return bookings;
+  return booking;
 }
 
 function getUser(user_id) {

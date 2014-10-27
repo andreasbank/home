@@ -116,6 +116,12 @@ function handleXmlResults(requestIndicator, xmlObjectsPointer, callbackFunction)
       case 'users':
         xmlObjects = createUsersFromDomXml(xmlObjectsPointer.innerObject[0]);
         break;
+      case 'portals':
+        xmlObjects = createPortalsFromDomXml(xmlObjectsPointer.innerObject[0]);
+        break;
+      case 'bookings':
+        xmlObjects = createBookingsFromDomXml(xmlObjectsPointer.innerObject[0]);
+        break;
       case 'defaultObjects':
         xmlObjects = createDefaultObject(xmlObjectsPointer.innerObject[0]);
         break;
@@ -197,14 +203,14 @@ function createUsersFromDomXml(xmlObjects) {
 function createPortalsFromDomXml(xmlObjects) {
   var portalsArray = new Array();
   var portalsXml = xmlObjects.documentElement;
-  for(var i=0; i<portalXml.childNodes.length; i++) {
+  for(var i=0; i<portalsXml.childNodes.length; i++) {
     var portalXml = portalsXml.childNodes[i];
     var id =portalXml.getElementsByTagName('id')[0].innerHTML;
     var name = portalXml.getElementsByTagName('name')[0].innerHTML;
-    var hostsXml = portalXml.getElementsByTagName('hosts');
+    var hostsXml = portalXml.getElementsByTagName('hosts')[0];
     var hosts = new Array();
-    for(var i=0; i<hostsXml.childNodes.length; i++) {
-      hosts.push(hostsXml.childNodes[i].innerHTML);
+    for(var j=0; j<hostsXml.childNodes.length; j++) {
+      hosts.push(hostsXml.childNodes[j].innerHTML);
     }
     var portal = new Portal(
       id,
@@ -228,9 +234,9 @@ function createBookingsFromDomXml(xmlObjects) {
   var bookingsXml = xmlObjects.documentElement;
   for(var i=0; i<bookingsXml.childNodes.length; i++) {
     var bookingXml = bookingsXml.childNodes[i];
-    var user_id = bookingXml.getElementsByTagName('user_id')[0].innerHTML;
-    var portal_id = bookingXml.getElementsByTagName('portal_id')[0].innerHTML;
-    var book_date = bookingXml.getElementsByTagName('book_date')[0].innerHTML;
+    var user_id = bookingXml.getElementsByTagName('userId')[0].innerHTML;
+    var portal_id = bookingXml.getElementsByTagName('portalId')[0].innerHTML;
+    var book_date = bookingXml.getElementsByTagName('bookDate')[0].innerHTML;
     var booking = new Booking(
       user_id,
       portal_id,

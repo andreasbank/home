@@ -9,6 +9,7 @@
   <script type="text/javascript" src="ajax.js"></script>
 </head>
 <body>
+<div id="gui"></div>
 <script type="text/javascript">
   <!--
 
@@ -19,7 +20,6 @@
   var portalsRequestIndicator = null;
   var portalsPointer = null;
   var portals = null;
-  var bookedOwnPortals = null;
 
   var bookingsRequestIndicator = null;
   var bookingsPointer = null;
@@ -29,32 +29,34 @@
   var loggedInUserInfoPointer = null;
   var loggedInUser = null;
 
+  var gui = new Gui();
+
   function callbackUsers(result_users) {
     users = result_users;
     if(null != portals && null != bookings) {
-      drawGui();
+      gui.draw();
     }
   }
 
   function callbackPortals(result_portals) {
     portals = result_portals;
     if(null != users && null != bookings) {
-      drawGui();
+      gui.draw();
     }
   }
 
   function callbackBookings(result_bookings) {
     bookings = result_bookings;
     if(null != users && null != portals) {
-      drawGui();
+      gui.draw();
     }
   }
 
   function findBookedOwnPortals() {
-    var bookedOwnPortals = null;
-    for(var i = 0; i < portals.length; i++) {
-      if(portals[i].getBooking().user.id == loggedInUser.id) {
-        bookedOwnPortals.push(portals[i]);
+    var bookedOwnPortals = new Array();
+    for(var i = 0; i < bookings.length; i++) {
+      if(bookings[i].getUser().id == loggedInUser.id) {
+        bookedOwnPortals.push(bookings[i].getPortal());
       }
     }
     return bookedOwnPortals;
@@ -63,7 +65,7 @@
   function getPortals() {
     portalsPointer = { innerObject: new Array() };
     portalsRequestIndicator = new RequestIndicator();
-    ajaxXml('getPortalsWithBookings', 'responseType=xml', portalsRequestIndicator, portalsPointer, callbackPortals);
+    ajaxXml('getPortals', 'responseType=xml', portalsRequestIndicator, portalsPointer, callbackPortals);
   }
 
   function getUsers() {
@@ -80,13 +82,16 @@
 
   function callbackLoggedInUserInfo(result) {
     if(null == result) {
-      setCookie('axis-home', '', -1);
+      removeCookie('axis-home');
       alert('Invalid session detected and removed, you need to log in again')
       window.location = './'
       return;
     }
     loggedInUser = result[0];
-    document.getElementById('loggedInUserTag').innerHTML = loggedInUser.fullName;
+    loggedIn = document.getElementById('loggedInUserTag');
+    if(null != loggedIn) {
+      loggedIn.innerHTML = loggedInUser.fullName;
+    }
   }
 
   function getLoggedInUserInfo() {
@@ -95,43 +100,260 @@
     ajaxXml('getLoggedInUserInfo', 'responseType=xml', loggedInUserInfoRequestIndicator, loggedInUserInfoPointer, callbackLoggedInUserInfo);
   }
 
-  function drawGui() {
-    document.write("<p>Logged in as <span id=\"loggedInUserTag\">(fetching info...)</span></p>\n");
+  function createForm(method, action) {
+    var form = document.createElement('form');
+    form.setAttribute('method', method);
+    form.setAttribute('action', action);
+    return form;
+  }
+
+  function createInput(id, name, style, type, eventType, eventString, value) {
+    var input = document.createElement('input');
+    if(null != id) {
+      input.setAttribute('id', id);
+    }
+    if(null == name) {
+      name = '';
+    }
+    input.setAttribute('name', name);
+    if(null != style) {
+      input.setAttribute('style', style);
+    }
+    if(null == type) {
+      type = 'text';
+    }
+    input.setAttribute('type', type);
+    if(null != eventType && null != eventString) {
+      input.setAttribute(eventType, eventString);
+    }
+    if(null == value) {
+      value = '';
+    }
+    input.setAttribute('value', value);
+    return input;
+  }
+
+  function Gui() {
+    this.drawingInProggress = false;
+    this.guiDiv = 'gui';
+
+    /**
+     * Tells the drawing mechanism
+     * that we have begun drawing.
+     * Used to protect against multiple
+     * calls to the draw() method.
+     */
+    this.beginDrawing = function () {
+      this.drawingInProgress = true;
+    };
+
+    /**
+     * Tells the drawing mechanism
+     * that we have finished drawing.
+     */
+    this.finishDrawing = function () {
+      this.drawingInProgress = false;
+    };
+
+    /**
+     * Draws a login input form that can
+     * be used to log in to the system.
+     */
+    this.drawLogin = function (targetDiv) {
+      var form = createForm('post', 'api.php');
+      var inputAction = createInput(null, 'action', null, 'hidden', null, null, 'doLogin');
+      var inputUsername = createInput(null, 'username', null, null, null, null, null);
+      var inputPassword = createInput(null, 'password', null, null, null, null, null);
+      var inputLogin = createInput(null, null, 'height:100%;', 'submit', null, null, 'Login!');
+      var table = document.createElement('table');
+      var tr = document.createElement('tr');
+      var td = document.createElement('td');
+      form.appendChild(inputAction);
+      td.innerHTML = 'user:';
+      tr.appendChild(td);
+      td = document.createElement('td');
+      td.appendChild(inputUsername);
+      tr.appendChild(td);
+      td = document.createElement('td');
+      td.setAttribute('rowspan', '2');
+      td.appendChild(inputLogin);
+      tr.appendChild(td);
+      table.appendChild(tr);
+      tr = document.createElement('tr');
+      td = document.createElement('td');
+      td.innerHTML = 'pass:';
+      tr.appendChild(td);
+      td = document.createElement('td');
+      td.appendChild(inputPassword);
+      tr.appendChild(td);
+      table.appendChild(tr);
+      form.appendChild(table);
+      document.getElementById(targetDiv).guiDiv.appendChild(form);
+    }
+
+    /**
+     * Draws info about the logged in user.
+     */
+    this.drawLoginInfo = function (targetDiv) {
+      var form = createForm('post', 'api.php');
+      var p = document.createElement('p');
+      var span = document.createElement('span');
+      var inputAction = createInput(null, 'action', null, 'hidden', null, null, 'doLogout');
+      var inputLogout = createInput(null, null, null, 'submit', null, null, 'Logout');
+      p.innerHTML = 'Logged in as ';
+      span.setAttribute('id', 'loggedInUserTag');
+      if(null != loggedInUser) {
+        span.innerHTML = loggedInUser.fullName;
+      }
+      else {
+        span.innerHTML = '(fetching info...)';
+      }
+      p.appendChild(span);
+      form.appendChild(p);
+      form.appendChild(inputAction);
+      form.appendChild(inputLogout);
+      document.getElementById(targetDiv).appendChild(form);
+    }
+
+    /**
+     * Draws a given array of Portal objects ass
+     * a html table.
+     */
+    this.drawPortals = function (targetDiv, portalsToDraw) {
+      var tableEnvironments = null
+      var trEnvironments = document.createElement('tr');
+      var tdEnvironment = null;
+      for(var i = 0; i < portalsToDraw.length; i++) {
+        if(i % 5 == 0) {
+          if(null == tableEnvironments) {
+            tableEnvironments = document.createElement('table');
+          }
+          else {
+            tableEnvironments.appendChild(trEnvironments);
+            trEnvironments = document.createElement('tr');
+          }
+        }
+        tdEnvironment = document.createElement('td');
+        tdEnvironment.setAttribute('class', 'main_table_td');
+        var table = document.createElement('table');
+        table.setAttribute('class', 'env_box booked' + (null != portalsToDraw[i].getBooking() ? (portalsToDraw[i].isOwnBooking() ? '_own' : '') : '_none'));
+        var tr = document.createElement('tr');
+        var td = document.createElement('td');
+        td.setAttribute('colspan', '2');
+        td.setAttribute('class', 'env_name');
+        td.innerHTML = portalsToDraw[i].name;
+        tr.appendChild(td);
+        table.appendChild(tr);
+        tr = document.createElement('tr');
+        td = document.createElement('td');
+        var hostsTable = document.createElement('table');
+        for(var j = 0; j < portalsToDraw[i].hosts.length; j++) {
+          var hostsTr = document.createElement('tr');
+          var hostsTd = document.createElement('td');
+          hostsTd.innerHTML = portalsToDraw[i].hosts[j];
+          hostsTr.appendChild(hostsTd);
+          hostsTable.appendChild(hostsTr);
+        }
+        td.appendChild(hostsTable);
+        tr.appendChild(td);
+        var inputAction = createInput(null, 'action', null, 'hidden', null, null, 'doBook');
+        var inputPortal = createInput(null, 'portal_id', null, 'hidden', null, null, portalsToDraw[i].id);
+        var inputBook = createInput(null, null, null, 'submit', null, null, 'Book!');
+        td = document.createElement('td');
+        td.setAttribute('rowspan', '2');
+        td.appendChild(inputAction);
+        td.appendChild(inputPortal);
+        td.appendChild(inputBook);
+        tr.appendChild(td);
+        table.appendChild(tr);
+        tr = document.createElement('tr');
+        td = document.createElement('td');
+        td.innerHTML = (portalsToDraw[i].getBooking() ? portalsToDraw[i].getBooking().getUser().fullName : '&nbsp;');
+        tr.appendChild(td);
+        table.appendChild(tr);
+
+        tdEnvironment.appendChild(table);
+        trEnvironments.appendChild(tdEnvironment);
+        if(i + 1 == portalsToDraw.length) {
+          tableEnvironments.appendChild(trEnvironments);
+        }
+
+      }
+      document.getElementById(targetDiv).appendChild(tableEnvironments);
+    }
+
+    /**
+     * Draws Portal objects that the logged
+     * in user has booked ass a html table.
+     */
+    this.drawOwnBookedPortals = function (targetDiv) {
+      this.drawPortals(targetDiv, findBookedOwnPortals());
+    }
+
+    /**
+     * Draws all Portal objects fetched from
+     * the database ass a html table.
+     */
+    this.drawAllPortals = function (targetDiv) {
+      this.drawPortals(targetDiv, portals);
+    }
+
+    //createInput(id, name, style, type, onclick, value)
+    this.drawSearchTool = function (targetDiv) {
+      var table = document.createElement('table');
+      var tr = document.createElement('tr');
+      var td = document.createElement('td');
+      var inputSearch = createInput('searchFilter', null, null, null, 'onkeyup', 'javascript:searchFilter();', null);
+      var inputSearchLabel = document.createElement('label');
+      inputSearchLabel.setAttribute('for', 'searchFilter');
+      inputSearchLabel.innerHTML = 'Search filter: ';
+      var inputRefresh = createInput('searchRefreshState', null, null, 'checkbox', 'onclick', 'javascript:setSearchRefreshState();', '1');
+      var inputRefreshLabel = document.createElement('label');
+      inputRefreshLabel.setAttribute('for', 'searchRefreshState');
+      inputRefreshLabel.innerHTML = 'Refresh every 10 seconds';
+      td.appendChild(inputSearchLabel);
+      td.appendChild(inputSearch);
+      td.appendChild(document.createElement('br'));
+      td.appendChild(inputRefresh);
+      td.appendChild(inputRefreshLabel);
+      tr.appendChild(td);
+      td = document.createElement('td');
+      tr.appendChild(td);
+      table.appendChild(tr);
+      document.getElementById(targetDiv).appendChild(table);
+    }
+
+    /**
+     * Draws the system GUI as a html page.
+     */
+    this.draw = function () {
+      if(this.drawingInProgress) {
+        return;
+      }
+      this.beginDrawing();
+
+      this.drawLoginInfo(this.guiDiv);
+      this.drawSearchTool(this.guiDiv);
+      this.drawOwnBookedPortals(this.guiDiv);
+      this.drawAllPortals(this.guiDiv);
+
+      this.finishDrawing();
+    }
   }
 
   var session_id = getCookie('axis-home');
   if(null != session_id) {
-    document.write("<p>Logged in as <span id=\"loggedInUserTag\">(fetching info...)</span></p>\n");
-    document.write("\t<form method=\"post\" action=\"api.php\">\n");
-    document.write("\t<input name=\"action\" type=\"hidden\" value=\"doLogout\" />\n");
-    document.write("\t<input type=\"submit\" value=\"Logout!\">\n");
-    document.write("</form>\n");
     getLoggedInUserInfo();
     getUsers();
     getPortals();
     getBookings();
   }
   else {
-    document.write("<form method=\"post\" action=\"api.php\">\n");
-    document.write("<input name=\"action\" type=\"hidden\" value=\"doLogin\" />\n");
-    document.write("<table>\n");
-    document.write("\t<tr>\n");
-    document.write("\t\t<td>user:</td>\n");
-    document.write("\t\t<td><input name=\"username\" type=\"text\" value=\"\" /></td>\n");
-    document.write("\t\t<td rowspan=\"2\"><input style=\"height:100%;\" type=\"submit\" value=\"Login!\" /></td>\n");
-    document.write("\t</tr>\n");
-    document.write("\t<tr>\n");
-    document.write("\t\t<td>pass:</td>\n");
-    document.write("\t\t<td><input name=\"password\" type=\"password\" value=\"\" /></td>\n");
-    document.write("\t</tr>\n");
-    document.write("</table>\n");
-    document.write("</form>\n");
+    gui.drawLogin(this.guiDiv);
   }
 
   -->
 </script>
-<div id="">
-</div>
 </body>
 </html>
 

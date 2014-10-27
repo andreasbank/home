@@ -3,18 +3,24 @@
  */
 
 /**
- * setCookie()
  * Sets a cookie with a given value.
  */
 function setCookie(cookieName, cookieValue, expireDays) {
   var expireDate = new Date();
-  expireDate.setDate(expireDate.getDate()+expireDays);
-  cookieValue = cookieValue+"; expires="+expireDate.toUTCString();
-  document.cookie = cookieName+"="+cookieValue;
+  expireDate.setDate(expireDate.getDate() + expireDays);
+  cookieValue = cookieValue+"; expires=" + expireDate.toUTCString();
+  document.cookie = cookieName + "=" + cookieValue;
+}
+
+
+/**
+ * Removes/invalidates a cookie.
+ */
+function removeCookie(cookieName) {
+  setCookie(cookieName, '', 'Thu, 01 Jan 1970 00:00:00 UTC');
 }
 
 /**
- * getCookie()
  * Retrieves a cookie value.
  */
 function getCookie(cookieName) {

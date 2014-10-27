@@ -50,7 +50,7 @@ class Portal {
     $xml = sprintf("%s<portal>\n", $xml);
     $xml = sprintf("%s\t<id>%s</id>\n", $xml, $this->id);
     $xml = sprintf("%s\t<name>%s</name>\n", $xml, htmlspecialchars($this->name));
-    $xml = sprintf("%s\t<hosts count=\"%s\">\t", $xml, count($this->hosts));
+    $xml = sprintf("%s\t<hosts count=\"%s\">\n", $xml, count($this->hosts));
     for($i = 0; $i < count($this->hosts); $i++) {
       $xml = sprintf("%s\t\t<host>%s</host>\n", $xml, $this->hosts[$i]);
     }
@@ -144,7 +144,7 @@ class Home {
   private $cookie_name = 'axis-home';
   private $mysql_host = 'localhost';
   private $mysql_username = 'root';
-  private $mysql_password = 'admin';
+  private $mysql_password = 'rootpass02';
   private $mysql_database = 'devicemanagement';
   private $mysql_users_table = 'users';
   private $mysql_sessions_table = 'sessions';
