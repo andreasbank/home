@@ -387,6 +387,14 @@ else if(isset($_POST['mysql'])) {
 				) == false) {
 		echo $htmlHeader.$errorMessage."(user_exists())".mysql_error()."\n".$htmlFooter;
 	}
+	// get_users()
+	else if(@mysql_query(	"create procedure `get_users`()\n".
+				"begin\n".
+				"	select * from `".$_POST['users_table']."`;\n".
+				"end"
+				) == false) {
+		echo $htmlHeader.$errorMessage."(get_users())".mysql_error()."\n".$htmlFooter;
+	}
 	// get_portals()
 	else if(@mysql_query(	"create procedure `get_portals`()\n".
 				"begin\n".

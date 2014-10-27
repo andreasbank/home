@@ -167,7 +167,7 @@ function createDefaultObject(xmlObjects) {
  *
  * @param xmlObject The XMLDOM object containing the user information
  *
- * @return Returns a Array of User
+ * @return Returns a Array of Users
  */
 function createUsersFromDomXml(xmlObjects) {
   var usersArray = new Array();
@@ -187,3 +187,56 @@ function createUsersFromDomXml(xmlObjects) {
   return usersArray;
 }
 
+/**
+ * Creates an Array of Portal objects out of the passed XMLDOM object
+ *
+ * @param xmlObject The XMLDOM object containing the user information
+ *
+ * @return Returns a Array of Portals
+ */
+function createPortalsFromDomXml(xmlObjects) {
+  var portalsArray = new Array();
+  var portalsXml = xmlObjects.documentElement;
+  for(var i=0; i<portalXml.childNodes.length; i++) {
+    var portalXml = portalsXml.childNodes[i];
+    var id =portalXml.getElementsByTagName('id')[0].innerHTML;
+    var name = portalXml.getElementsByTagName('name')[0].innerHTML;
+    var hostsXml = portalXml.getElementsByTagName('hosts');
+    var hosts = new Array();
+    for(var i=0; i<hostsXml.childNodes.length; i++) {
+      hosts.push(hostsXml.childNodes[i].innerHTML);
+    }
+    var portal = new Portal(
+      id,
+      name,
+      hosts
+    );
+    portalsArray.push(portal);
+  }
+  return portalsArray;
+}
+
+/**
+ * Creates an Array of Bookings objects out of the passed XMLDOM object
+ *
+ * @param xmlObject The XMLDOM object containing the user information
+ *
+ * @return Returns a Array of Bookings
+ */
+function createBookingsFromDomXml(xmlObjects) {
+  var bookingsArray = new Array();
+  var bookingsXml = xmlObjects.documentElement;
+  for(var i=0; i<bookingsXml.childNodes.length; i++) {
+    var bookingXml = bookingsXml.childNodes[i];
+    var user_id = bookingXml.getElementsByTagName('user_id')[0].innerHTML;
+    var portal_id = bookingXml.getElementsByTagName('portal_id')[0].innerHTML;
+    var book_date = bookingXml.getElementsByTagName('book_date')[0].innerHTML;
+    var booking = new Booking(
+      user_id,
+      portal_id,
+      book_date
+    );
+    bookingsArray.push(booking);
+  }
+  return bookingsArray;
+}

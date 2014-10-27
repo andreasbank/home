@@ -12,36 +12,73 @@
 <script type="text/javascript">
   <!--
 
+  var usersRequestIndicator = null;
+  var usersPointer = null;
+  var users = null;
+
   var portalsRequestIndicator = null;
   var portalsPointer = null;
   var portals = null;
   var bookedOwnPortals = null;
 
+  var bookingsRequestIndicator = null;
+  var bookingsPointer = null;
+  var bookings = null;
+
   var loggedInUserInfoRequestIndicator = null;
   var loggedInUserInfoPointer = null;
   var loggedInUser = null;
 
-  function setPortals(result_portals) {
-    portals = result_portals;
-    findBookedOwnPortals();
-  }
-
-  function findBookedOwnPortals() {
-    bookedOwnPortals = null;
-    for(var i = 0; i < portals.length; i++) {
-      if(portals[i].booking.user.id == loggedInUser.id) {
-        bookedOwnPortals.push(portals[i]);
-      }
+  function callbackUsers(result_users) {
+    users = result_users;
+    if(null != portals && null != bookings) {
+      drawGui();
     }
   }
 
-  function refreshPortals() {
-    portalsObjectPointer = { innerObject: new Array() };
-    portalsRequestIndicator = new RequestIndicator();
-    ajaxXml('getPortalsWithBookings', 'responseType=xml', portalsRequestIndicator, portalsPointer, setPortals);
+  function callbackPortals(result_portals) {
+    portals = result_portals;
+    if(null != users && null != bookings) {
+      drawGui();
+    }
   }
 
-  function setLoggedInUserInfo(result) {
+  function callbackBookings(result_bookings) {
+    bookings = result_bookings;
+    if(null != users && null != portals) {
+      drawGui();
+    }
+  }
+
+  function findBookedOwnPortals() {
+    var bookedOwnPortals = null;
+    for(var i = 0; i < portals.length; i++) {
+      if(portals[i].getBooking().user.id == loggedInUser.id) {
+        bookedOwnPortals.push(portals[i]);
+      }
+    }
+    return bookedOwnPortals;
+  }
+
+  function getPortals() {
+    portalsPointer = { innerObject: new Array() };
+    portalsRequestIndicator = new RequestIndicator();
+    ajaxXml('getPortalsWithBookings', 'responseType=xml', portalsRequestIndicator, portalsPointer, callbackPortals);
+  }
+
+  function getUsers() {
+    usersPointer = { innerObject: new Array() };
+    usersRequestIndicator = new RequestIndicator();
+    ajaxXml('getUsers', 'responseType=xml', usersRequestIndicator, usersPointer, callbackUsers);
+  }
+
+  function getBookings() {
+    bookingsPointer = { innerObject: new Array() };
+    bookingsRequestIndicator = new RequestIndicator();
+    ajaxXml('getBookings', 'responseType=xml', bookingsRequestIndicator, bookingsPointer, callbackBookings);
+  }
+
+  function callbackLoggedInUserInfo(result) {
     if(null == result) {
       setCookie('axis-home', '', -1);
       alert('Invalid session detected and removed, you need to log in again')
@@ -55,22 +92,28 @@
   function getLoggedInUserInfo() {
     loggedInUserInfoPointer = { innerObject: new Array() };
     loggedInUserInfoRequestIndicator = new RequestIndicator();
-    ajaxXml('getLoggedInUserInfo', 'responseType=xml', loggedInUserInfoRequestIndicator, loggedInUserInfoPointer, setLoggedInUserInfo);
+    ajaxXml('getLoggedInUserInfo', 'responseType=xml', loggedInUserInfoRequestIndicator, loggedInUserInfoPointer, callbackLoggedInUserInfo);
+  }
+
+  function drawGui() {
+    document.write("<p>Logged in as <span id=\"loggedInUserTag\">(fetching info...)</span></p>\n");
   }
 
   var session_id = getCookie('axis-home');
   if(null != session_id) {
     document.write("<p>Logged in as <span id=\"loggedInUserTag\">(fetching info...)</span></p>\n");
     document.write("\t<form method=\"post\" action=\"api.php\">\n");
-    document.write("\t<input name=\"action\" type=\"hidden\" value=\"do_logout\" />\n");
+    document.write("\t<input name=\"action\" type=\"hidden\" value=\"doLogout\" />\n");
     document.write("\t<input type=\"submit\" value=\"Logout!\">\n");
     document.write("</form>\n");
     getLoggedInUserInfo();
-    refreshPortals();
+    getUsers();
+    getPortals();
+    getBookings();
   }
   else {
     document.write("<form method=\"post\" action=\"api.php\">\n");
-    document.write("<input name=\"action\" type=\"hidden\" value=\"do_login\" />\n");
+    document.write("<input name=\"action\" type=\"hidden\" value=\"doLogin\" />\n");
     document.write("<table>\n");
     document.write("\t<tr>\n");
     document.write("\t\t<td>user:</td>\n");
@@ -87,6 +130,8 @@
 
   -->
 </script>
+<div id="">
+</div>
 </body>
 </html>
 

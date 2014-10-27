@@ -1,6 +1,6 @@
 <?php
 /**
- * VHS Home, Copyright 2014 by Andreas Bank, andreas.bank@axis.com (andreas.mikael.bank@gmail.com)
+ * AVHS Home, Copyright 2014 by Andreas Bank, andreas.bank@axis.com (andreas.mikael.bank@gmail.com)
  * Licensed under GPLv3.
  */
 
@@ -15,12 +15,10 @@ class Portal {
   private $booked_user = null;
   private $booked_date = null;
 
-  public function __construct($id, $name, $hosts, $booked_user, $booked_date) {
+  public function __construct($id, $name, $hosts) {
     $this->id = $id;
     $this->name = $name;
     $this->hosts = $hosts;
-    $this->booked_user = $booked_user;
-    $this->booked_date = $booked_date;
   }
 
   public function get_id() {
@@ -40,12 +38,8 @@ class Portal {
       return $this->hosts[$index];
   }
 
-  public function get_booked_user() {
-    return $this->booked_user;
-  }
-
-  public function get_booked_date() {
-    return $this->booked_date;
+  public function set_booking($booking) {
+    $this->booking = $booking;
   }
 
   public function to_xml($xml_declaration = true) {
@@ -61,14 +55,6 @@ class Portal {
       $xml = sprintf("%s\t\t<host>%s</host>\n", $xml, $this->hosts[$i]);
     }
     $xml = sprintf("%s\t</hosts>\n", $xml);
-    $xml = sprintf("%s\t<bookedUser>", $xml);
-    if(null != $this->booked_user) {
-      $xml = sprintf("%s\n\t\t<id>%s</id>\n", $xml, $this->booked_user->get_id());
-      $xml = sprintf("%s\t\t<username>%s</username>\n", $xml, $this->booked_user->get_username());
-      $xml = sprintf("%s\t\t<fullName>%s</fullName>\n\t", $xml, htmlspecialchars($this->booked_user->get_full_name()));
-    }
-    $xml = sprintf("%s</bookedUser>\n", $xml);
-    $xml = sprintf("%s\t<bookedDate>%s</bookedDate>\n", $xml, $this->booked_date);
     $xml = sprintf("%s</portal>\n", $xml);
     return $xml;
   }
@@ -113,13 +99,52 @@ class User {
 
 }
 
+class Booking {
+  private $user_id = null;
+  private $portal_id = null;
+  private $book_date = null;
+
+  public function __construct($user_id, $portal_id, $book_date) {
+    $this->user_id = $user_id;
+    $this->portal_id = $portal_id;
+    $this->book_date = $book_date;
+  }
+
+  public function get_user_id() {
+    return $this->user_id;
+  }
+
+  public function get_portal_id() {
+    return $this->portal_id;
+  }
+
+  public function get_book_date() {
+    return $this->book_date;
+  }
+
+  public function to_xml($xml_declaration = true) {
+    $xml = '';
+    if($xml_declaration) {
+      $xml = sprintf("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+    }
+    $xml = sprintf("%s<booking>\n", $xml);
+    $xml = sprintf("%s\t<userId>%s</userId>\n", $xml, $this->user_id);
+    $xml = sprintf("%s\t<portalId>%s</portalId>\n", $xml, $this->portal_id);
+    $xml = sprintf("%s\t<bookDate>%s</bookDate>\n", $xml, $this->book_date);
+    $xml = sprintf("%s</booking>\n", $xml);
+    return $xml;
+  }
+
+}
+
+
 class Home {
   private $fake_ldap = true;
   private $session_time = 604800; // en vecka
   private $cookie_name = 'axis-home';
   private $mysql_host = 'localhost';
   private $mysql_username = 'root';
-  private $mysql_password = 'rootpass02';
+  private $mysql_password = 'admin';
   private $mysql_database = 'devicemanagement';
   private $mysql_users_table = 'users';
   private $mysql_sessions_table = 'sessions';
@@ -327,6 +352,24 @@ class Home {
     }
   }
 
+  /**
+   * Returns aa array of User objects
+   */
+  public function get_users() {
+    try {
+      $result_set = $this->query(sprintf("call find_users()"), true);
+      $result_set_len = count($result_set);
+      $result_array = array();
+      for($i = 0; $i < $result_set_len; $i++) {
+        $result_array[] = new User($result_set[$i]['id'],
+                                   $result_set[$i]['username'],
+                                   $result_set[$i]['full_name']);
+      }
+      return $result_array;
+    } catch(Exception $e) {
+      throw $e;
+    }
+  }
 
   /**
    * Creates a new session in the system/database and returns the new ID.
@@ -491,6 +534,20 @@ class Home {
     return null;
   }
 
+  public function get_bookings() {
+    $result_set = $this->query('call get_bookings();', true);
+    $result_set_len = count($result_set);
+    $result_array = array();
+    if($result_set_len > 0) {
+      for($i = 0; $i < $result_set_len; $i++) {
+        $result_array[] = new Booking($result_set[$i]['user_id'],
+                                     $result_set[$i]['portal_id'],
+                                     $result_set[$i]['book_date']);
+      }
+    }
+    return $result_array;
+  }
+
   public function get_portals_array_with_bookings() {
     $result_set = $this->query('call get_portals_with_bookings();', true);
     $result_set_len = count($result_set);
@@ -498,15 +555,9 @@ class Home {
     if($result_set_len > 0) {
       for($i = 0; $i < $result_set_len; $i++) {
         $hosts = explode(',', $result_set[$i]['ip']);
-        $user = null;
-        if(null != $result_set[$i]['user_id']) {
-          $user = $this->find_user($result_set[$i]['user_id']);
-        }
         $result_array[] = new Portal($result_set[$i]['id'],
                                      $result_set[$i]['name'],
-                                     $hosts,
-                                     $user,
-                                     $result_set[$i]['book_date']);
+                                     $hosts);
       }
     }
     return $result_array;
@@ -543,7 +594,7 @@ elseif(isset($_POST['action']) && $_POST['action'] == 'do_logout') {
   header("Location: ./");
 }
 //DISABLED SECTION
-elseif(false || !isset($_COOKIE['axis-home']) || empty($_COOKIE['axis-home'])) {
+/*elseif(false || !isset($_COOKIE['axis-home']) || empty($_COOKIE['axis-home'])) {
   printf($html_header);
 ?>
 <form method="post" action="">
@@ -612,4 +663,4 @@ elseif(false) {
   printf("\t</tr>\n</table>\n");
   printf($html_footer);
 }
-
+*/
