@@ -20,6 +20,7 @@
   var portalsRequestIndicator = null;
   var portalsPointer = null;
   var portals = null;
+  var visiblePortals = null;
 
   var bookingsRequestIndicator = null;
   var bookingsPointer = null;
@@ -112,10 +113,9 @@
     if(null != id) {
       input.setAttribute('id', id);
     }
-    if(null == name) {
-      name = '';
+    if(null != name) {
+      input.setAttribute('name', name);
     }
-    input.setAttribute('name', name);
     if(null != style) {
       input.setAttribute('style', style);
     }
@@ -136,6 +136,8 @@
   function Gui() {
     this.drawingInProggress = false;
     this.guiDiv = 'gui';
+    this.visibleEnvironmentsId = 'visibleEnvironmentsId';
+    this.visibleEnvironmentsId = 'ownEnvironmentsId';
 
     /**
      * Tells the drawing mechanism
@@ -188,7 +190,7 @@
       tr.appendChild(td);
       table.appendChild(tr);
       form.appendChild(table);
-      document.getElementById(targetDiv).guiDiv.appendChild(form);
+      document.getElementById(targetDiv).appendChild(form);
     }
 
     /**
@@ -219,14 +221,15 @@
      * Draws a given array of Portal objects ass
      * a html table.
      */
-    this.drawPortals = function (targetDiv, portalsToDraw) {
-      var tableEnvironments = null
+    this.drawPortals = function (targetDiv, newId, portalsToDraw) {
+      var tableEnvironments = null;
       var trEnvironments = document.createElement('tr');
       var tdEnvironment = null;
       for(var i = 0; i < portalsToDraw.length; i++) {
         if(i % 5 == 0) {
           if(null == tableEnvironments) {
             tableEnvironments = document.createElement('table');
+            tableEnvironments.setAttribute('id', newId);
           }
           else {
             tableEnvironments.appendChild(trEnvironments);
@@ -279,7 +282,15 @@
         }
 
       }
-      document.getElementById(targetDiv).appendChild(tableEnvironments);
+
+      var rootDiv = document.getElementById(targetDiv);
+      var lastTableEnvironments = document.getElementById(newId);
+      if(null != lastTableEnvironments) {
+        rootDiv.removeChild(lastTableEnvironments);
+      }
+      if(null != tableEnvironments) {
+        rootDiv.appendChild(tableEnvironments);
+      }
     }
 
     /**
@@ -287,7 +298,7 @@
      * in user has booked ass a html table.
      */
     this.drawOwnBookedPortals = function (targetDiv) {
-      this.drawPortals(targetDiv, findBookedOwnPortals());
+      this.drawPortals(targetDiv, this.ownEnvironmentsId, findBookedOwnPortals());
     }
 
     /**
@@ -295,22 +306,71 @@
      * the database ass a html table.
      */
     this.drawAllPortals = function (targetDiv) {
-      this.drawPortals(targetDiv, portals);
+      visiblePortals = portals;
+      this.drawPortals(targetDiv, this.visibleEnvironmentsId, visiblePortals);
     }
 
-    //createInput(id, name, style, type, onclick, value)
+    /**
+     * Filter the environments array to be displayed
+     */
+    this.searchFilter = function (searchStringTag, portalsList) {
+      var searchString = document.getElementById(searchStringTag).value.toLowerCase();
+      if('' == searchString) {
+        visiblePortals = portalsList;
+        this.drawPortals(this.guiDiv, this.visibleEnvironmentsId, visiblePortals);
+        return;
+      }
+
+      visiblePortals = new Array();
+
+      for(var i = 0; i < portalsList.length; i++) {
+
+        // search name
+        if(portalsList[i].name.toLowerCase().indexOf(searchString) >= 0) {
+          visiblePortals.push(portalsList[i]);
+          continue;
+        }
+
+        // search hosts
+        var hostsLoopFound = false;
+        for(var j = 0; j < portalsList[i].hosts.length; j++) {
+          if(portalsList[i].hosts[j].toLowerCase().indexOf(searchString) >= 0) {
+            visiblePortals.push(portalsList[i]);
+            hostsLoopFound = true;
+            break;
+          }
+        }
+        if(hostsLoopFound) {
+          continue;
+        }
+
+        // search booked users username and fullName
+        var portalBooking = portalsList[i].getBooking();
+        if(portalBooking != null) {
+          var portalBookingUser = portalBooking.getUser();
+          if(portalBookingUser.username.toLowerCase().indexOf(searchString) >= 0 ||
+             portalBookingUser.fullName.toLowerCase().indexOf(searchString) >= 0) {
+            visiblePortals.push(portalsList[i]);
+            continue;
+          }
+        }
+      }
+      this.drawPortals(this.guiDiv, this.visibleEnvironmentsId, visiblePortals);
+    }
+
+    //createInput(id, name, style, type, actiontype, onaction, value)
     this.drawSearchTool = function (targetDiv) {
       var table = document.createElement('table');
       var tr = document.createElement('tr');
       var td = document.createElement('td');
-      var inputSearch = createInput('searchFilter', null, null, null, 'onkeyup', 'javascript:searchFilter();', null);
+      var inputSearch = createInput('searchFilter', null, null, null, 'onkeyup', 'javascript:gui.searchFilter(\'searchFilter\', portals);', null);
       var inputSearchLabel = document.createElement('label');
       inputSearchLabel.setAttribute('for', 'searchFilter');
       inputSearchLabel.innerHTML = 'Search filter: ';
-      var inputRefresh = createInput('searchRefreshState', null, null, 'checkbox', 'onclick', 'javascript:setSearchRefreshState();', '1');
+      var inputRefresh = createInput('searchRefreshState', null, null, 'checkbox', 'onclick', 'javascript:gui.setSearchRefreshState();', '1');
       var inputRefreshLabel = document.createElement('label');
       inputRefreshLabel.setAttribute('for', 'searchRefreshState');
-      inputRefreshLabel.innerHTML = 'Refresh every 10 seconds';
+      inputRefreshLabel.innerHTML = 'Sync with server every 10 seconds';
       td.appendChild(inputSearchLabel);
       td.appendChild(inputSearch);
       td.appendChild(document.createElement('br'));
@@ -349,7 +409,7 @@
     getBookings();
   }
   else {
-    gui.drawLogin(this.guiDiv);
+    gui.drawLogin(gui.guiDiv);
   }
 
   -->

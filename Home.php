@@ -140,14 +140,17 @@ class Booking {
 
 class Home {
   private $fake_ldap = true;
-  private $session_time = 604800; // en vecka
-  private $cookie_name = 'axis-home';
-  private $mysql_host = 'localhost';
-  private $mysql_username = 'root';
-  private $mysql_password = 'rootpass02';
-  private $mysql_database = 'devicemanagement';
-  private $mysql_users_table = 'users';
-  private $mysql_sessions_table = 'sessions';
+  private $session_time = 604800; // one week
+  private $cookie_name = COOKIE_NAME;
+  private $mysql_host = MYSQL_HOST;
+  private $mysql_port = MYSQL_PORT;
+  private $mysql_username = MYSQL_USERNAME;
+  private $mysql_password = MYSQL_PASSWORD;
+  private $mysql_database = DATABASE_NAME;
+  private $mysql_users_table = USERS_TABLE;
+  private $mysql_sessions_table = SESSIONS_TABLE;
+  private $mysql_portals_table = PORTALS_TABLE;
+  private $mysql_bookings_table = BOOKINGS_TABLE;
   private $h_mysql = null; //mysql handler
 
   private $username = null;
