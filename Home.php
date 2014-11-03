@@ -565,6 +565,100 @@ class Home {
     }
     return $result_array;
   }
+
+  /**
+   * Returns a Portal object
+   */
+  public function get_environment_by_name($name) {
+    try {
+      if(null == $name) {
+        throw new Exception('No environment name given');
+      }
+      $result = $this->query(sprintf("call find_environment_by_name('%s')", $name), true);
+      $hosts = explode(',', $result[0]['ip']);
+      $environment = new Portal($result[0]['id'],
+                           $result[0]['name'],
+                           $hosts);
+      return $environment;
+    } catch(Exception $e) {
+      throw $e;
+    }
+  }
+
+  /**
+   * Returns a Booking object
+   */
+  public function get_booking_by_environment_name($name) {
+    try {
+      if(null == $name) {
+        throw new Exception('No environment name given');
+      }
+      $result = $this->query(sprintf("call find_booking_by_environment_name('%s')", $name), true);
+      $booking = new Booking($result[0]['user_id'],
+                           $result[0]['portal_id'],
+                           $result[0]['bookDate']);
+      return $booking;
+    } catch(Exception $e) {
+      throw $e;
+    }
+  }
+
+  /**
+   * Check if a given user has booked a given environment
+   */
+  public function get_build_permittion($username, $environment_name) {
+    $environment = $this->get_environment_by_name($environment_name);
+    if(!empty($environment)) {
+      $booking = $this->get_booking_by_environment_name($environment_name);
+      if(!empty($booking) &&
+         !empty($username)) {
+        $user_id = $this->find_user_id($username);
+        if($booking->user_id == $user_id) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Book an environment
+   */
+  public function book($user_id, $environment_id) {
+    try {
+      if((empty($user_id) && $user_id != 0) || (empty($environment_id) && $environment_id != 0)) {
+        throw new Exception('No user ID and/or environment ID given');
+      }
+      $result = $this->query(sprintf("call book('%s', '%s')", $user_id, $environment_id), true);
+    } catch(Exception $e) {
+      // TODO: see if it is errno 1062 and check int instead
+      if(false === strstr($e->getMessage(), 'Duplicate')) {
+        return false;
+      }
+      throw $e;
+    }
+    return true;
+  }
+
+  /**
+   * Unbook/return an environment
+   */
+  public function unbook($environment_id) {
+    try {
+      if(empty($environment_id) && $environment_id != 0) {
+        throw new Exception('No environment ID given');
+      }
+      $result = $this->query(sprintf("call unbook('%s')", $environment_id), true);
+    } catch(Exception $e) {
+      // TODO: see if it is errno 1062 and check int instead
+      if(false === strstr($e->getMessage(), 'Duplicate')) {
+        return false;
+      }
+      throw $e;
+    }
+    return true;
+  }
+
 }
 
 $home = new Home();

@@ -68,6 +68,51 @@ case 'getBookings':
   $result = sprintf("%s</bookings>\n", $result);
   break;
 
+case 'doBook':
+  try {
+    if(isset($_GET['user_id']) && isset($_GET['environment_id'])) {
+      $_POST['user_id'] = $_GET['user_id'];
+      $_POST['environment_id'] = $_GET['environment_id'];
+    }
+    if(!isset($_POST['user_id']) || !isset($_POST['environment_id'])) {
+      throw new Exception('Username or environment name not set');
+    }
+    $bookResult = $home->book($_POST['user_id'], $_POST['environment_id']);
+    $result = sprintf("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+    $result = sprintf("%s<bookResult>%s</bookResult>\n", $result, $bookResult ? 'Success' : 'Fail');
+  } catch(Exception $e) {
+    printf("Error: [%d] %s", $e->getCode(), $e->getMessage());
+    exit(0);
+  }
+  break;
+
+case 'doUnbook':
+  try {
+    if(isset($_GET['environment_id'])) {
+      $_POST['environment_id'] = $_GET['environment_id'];
+    }
+    if(!isset($_POST['environment_id'])) {
+      throw new Exception('Environment ID not set');
+    }
+    $unbookResult = $home->unbook($_POST['environment_id']);
+    $result = sprintf("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+    $result = sprintf("%s<unbookResult>%s</unbookResult>\n", $result, $unbookResult ? 'Success' : 'Fail');
+  } catch(Exception $e) {
+    printf("Error: [%d] %s", $e->getCode(), $e->getMessage());
+    exit(0);
+  }
+  break;
+
+case 'getBuildPermittion':
+  if(isset($_GET['username']) && isset($_GET['environment_name'])) {
+    $_POST['username'] = $_GET['username'];
+    $_POST['environment_name'] = $_GET['environment_name'];
+  }
+  $buildPermittion = $home->get_build_permittion($_POST['username'], $_POST['environment_name']);
+  $result = sprintf("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+  $result = sprintf("%s<buildPermittion>%s</buildPermittion>\n", $result, $buildPermittion ? 'Yes' : 'No');
+  break;
+
 case 'doLogin':
   if(!isset($_POST['username']) || empty($_POST['username']) ||
      !isset($_POST['password']) || empty($_POST['password'])) {

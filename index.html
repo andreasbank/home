@@ -160,7 +160,42 @@
     return input;
   }
 
+  /**
+   * Book an environment
+   */
+  function bookEnvironment(user_id, portal_id) {
+    var request = new XMLHttpRequest();
+    var theAjaxScript = 'api.php';
+    var theAjaxString = 'action=doBook&user_id=' + user_id + '&environment_id=' + portal_id;
+    request.open('POST', theAjaxScript, false);
+    request.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+    // TODO: fix a spinner!!!
+    request.send(theAjaxString);
+    if (request.status !== 200 || request.responseText.indexOf('Error')>=0) {
+      alert('Error:\n\n'+request.responseText);
+    }
+    refreshData();
+  };
+
+  /**
+   * Unbook an environment
+   */
+  function unbookEnvironment() {
+    var request = new XMLHttpRequest();
+    var theAjaxScript = 'api.php';
+    var theAjaxString = 'action=doUnbook&environment_id=' + portal_id;
+    request.open('POST', theAjaxScript, false);
+    request.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+    // TODO: fix a spinner!!!
+    request.send(theAjaxString);
+    if (request.status !== 200 || request.responseText.indexOf('Error')>=0) {
+      alert('Error:\n\n'+request.responseText);
+    }
+    refreshData();
+  };
+
   function Gui() {
+    this.homeAddress = 'lnxandreab1.se.axis.com'
     this.drawingInProggress = false;
     this.guiDiv = 'gui';
     this.visibleEnvironmentsId = 'visibleEnvironmentsId';
@@ -247,12 +282,13 @@
       form.appendChild(inputAction);
       form.appendChild(inputLogout);
       document.getElementById(targetDiv).appendChild(form);
-    }
+    };
 
     /**
      * Draws a given array of Portal objects ass
      * a html table.
      */
+     //createInput(id, name, style, type, actiontype, onaction, value)
     this.drawPortals = function (targetDiv, newId, portalsToDraw) {
       var tableEnvironments = null;
       var trEnvironments = document.createElement('tr');
@@ -292,12 +328,21 @@
         td.appendChild(hostsTable);
         tr.appendChild(td);
         var inputAction = createInput(null, 'action', null, 'hidden', null, null, 'doBook');
-        var inputPortal = createInput(null, 'portal_id', null, 'hidden', null, null, portalsToDraw[i].id);
-        var inputBook = createInput(null, null, null, 'submit', null, null, 'Book!');
+        var inputBook = null;
+        if(null != portalsToDraw[i].getBooking()) {
+          if(portalsToDraw[i].isOwnBooking()) {
+            inputBook = createInput(null, null, null, 'button', 'onclick', 'javascript:bookEnvironment(' + loggedInUser.id + ', ' + portalsToDraw[i].id + ')', 'Return!');
+          }
+          else {
+            inputBook = createInput(null, null, null, 'button', 'onclick', 'javascript:bookEnvironment(' + loggedInUser.id + ', ' + portalsToDraw[i].id + ')', 'Steal!');
+          }
+        }
+        else {
+          inputBook = createInput(null, null, null, 'button', 'onclick', 'javascript:bookEnvironment(' + loggedInUser.id + ', ' + portalsToDraw[i].id + ')', 'Book!');
+        }
         td = document.createElement('td');
         td.setAttribute('rowspan', '2');
         td.appendChild(inputAction);
-        td.appendChild(inputPortal);
         td.appendChild(inputBook);
         tr.appendChild(td);
         table.appendChild(tr);
@@ -323,7 +368,7 @@
       if(null != tableEnvironments) {
         rootDiv.appendChild(tableEnvironments);
       }
-    }
+    };
 
     /**
      * Draws Portal objects that the logged
@@ -331,7 +376,7 @@
      */
     this.drawOwnBookedPortals = function (targetDiv) {
       this.drawPortals(targetDiv, this.ownEnvironmentsId, findBookedOwnPortals());
-    }
+    };
 
     /**
      * Draws all Portal objects fetched from
@@ -340,7 +385,7 @@
     this.drawAllPortals = function (targetDiv) {
       visiblePortals = portals;
       this.drawPortals(targetDiv, this.visibleEnvironmentsId, visiblePortals);
-    }
+    };
 
     /**
      * Filter the environments array to be displayed
@@ -397,6 +442,10 @@
       getBookings();
     }
 
+    /**
+     * Activates and deactivates the periodic
+     * update/poll of the system data
+     */
     this.setDataRefreshState = function (dataRefreshStateId) {
       var intervalCheckbox = document.getElementById(dataRefreshStateId);
       var interval = this.dataRefreshSeconds;
@@ -421,7 +470,9 @@
       }
     }
 
-    //createInput(id, name, style, type, actiontype, onaction, value)
+    /**
+     * Draws the search tool
+     */
     this.drawSearchTool = function (targetDiv) {
       var table = document.createElement('table');
       var tr = document.createElement('tr');

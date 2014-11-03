@@ -422,6 +422,45 @@ else if(isset($_POST['mysql'])) {
 				) == false) {
 		echo $htmlHeader.$errorMessage."(get_bookings())".mysql_error()."\n".$htmlFooter;
 	}
+	// find_environment_by_name()
+	else if(@mysql_query(	"create procedure `find_environment_by_name`(in `var_environment_name` varchar(255))\n".
+				"begin\n".
+				"	select * from `".$_POST['portals_table']."`\n".
+				"	where name='".$_POST['var_environment_name']."';\n".
+				"end"
+				) == false) {
+		echo $htmlHeader.$errorMessage."(find_environment_by_name())".mysql_error()."\n".$htmlFooter;
+	}
+	// find_environment_by_name()
+	else if(@mysql_query(	"create procedure `find_booking_by_environment_name`(in `var_environment_name` varchar(255))\n".
+				"begin\n".
+				"	select b.* from `".$_POST['booking_table']."` b, `".$_POST['portals_table']."` p\n".
+				"	where b.portal_id=p.id\n".
+				"	and p.name='".$_POST['var_environment_name']."';\n".
+				"end"
+				) == false) {
+		echo $htmlHeader.$errorMessage."(find_booking_by_environment_name())".mysql_error()."\n".$htmlFooter;
+	}
+	// book()
+	else if(@mysql_query(	"create procedure `book`(in `var_user_id` int(11), in `var_environment_id` int(11))\n".
+				"begin\n".
+				"	insert into `".$_POST['booking_table']."` values(\n".
+				"		var_user_id,\n".
+				"		var_environment_id,\n".
+				"		NOW());\n".
+				"end"
+				) == false) {
+		echo $htmlHeader.$errorMessage."(book())".mysql_error()."\n".$htmlFooter;
+	}
+	// unbook()
+	else if(@mysql_query(	"create procedure `unbook`(in `var_environment_id` int(11))\n".
+				"begin\n".
+				"	delete from `".$_POST['booking_table']."`\n".
+				"	where portal_id=var_environment_id;\n".
+				"end"
+				) == false) {
+		echo $htmlHeader.$errorMessage."(unbook())".mysql_error()."\n".$htmlFooter;
+	}
 	else {
 		// problems in linux with access to create the configuration file
 		// make sure the folder is writeable
