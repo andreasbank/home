@@ -7,9 +7,36 @@
   <script type="text/javascript" src="helpers.js"></script>
   <script type="text/javascript" src="classes.js"></script>
   <script type="text/javascript" src="ajax.js"></script>
+  <script type="text/javascript" src="glMatrix-0.9.5.min.js"></script>
+  <script type="text/javascript" src="webgl-utils.js"></script></head>
+  <script type="text/javascript" src="bank3d.js"></script>
+  <script id="shader-fs" type="x-shader/x-fragment">
+    precision mediump float;
+
+    varying vec4 vColor;
+
+    void main(void) {
+      gl_FragColor = vColor;
+    }
+  </script>
+  <script id="shader-vs" type="x-shader/x-vertex">
+    attribute vec3 aVertexPosition;
+    attribute vec4 aVertexColor;
+
+    uniform mat4 uMVMatrix;
+    uniform mat4 uPMatrix;
+
+    varying vec4 vColor;
+
+    void main(void) {
+      gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+      vColor = aVertexColor;
+    }
+  </script>
 </head>
-<body>
+<body onload="return; webGLStart();">
 <div id="gui"></div>
+<canvas id="axis3d-canvas" style="display: none; border: none;" width="500" height="500"></canvas>
 <script type="text/javascript">
   <!--
 
@@ -138,6 +165,11 @@
     this.guiDiv = 'gui';
     this.visibleEnvironmentsId = 'visibleEnvironmentsId';
     this.visibleEnvironmentsId = 'ownEnvironmentsId';
+    this.dataRefreshStateId = 'dataRefreshState';
+    this.dataRefreshSeconds = 10;
+    this.searchFilterId = 'searchFilter';
+    this.dataRefreshInterval = null;
+    this.loggedInUserId = 'loggedInUser';
 
     /**
      * Tells the drawing mechanism
@@ -165,7 +197,7 @@
       var form = createForm('post', 'api.php');
       var inputAction = createInput(null, 'action', null, 'hidden', null, null, 'doLogin');
       var inputUsername = createInput(null, 'username', null, null, null, null, null);
-      var inputPassword = createInput(null, 'password', null, null, null, null, null);
+      var inputPassword = createInput(null, 'password', null, 'password', null, null, null);
       var inputLogin = createInput(null, null, 'height:100%;', 'submit', null, null, 'Login!');
       var table = document.createElement('table');
       var tr = document.createElement('tr');
@@ -203,7 +235,7 @@
       var inputAction = createInput(null, 'action', null, 'hidden', null, null, 'doLogout');
       var inputLogout = createInput(null, null, null, 'submit', null, null, 'Logout');
       p.innerHTML = 'Logged in as ';
-      span.setAttribute('id', 'loggedInUserTag');
+      span.setAttribute('id', this.loggedInUserId);
       if(null != loggedInUser) {
         span.innerHTML = loggedInUser.fullName;
       }
@@ -313,8 +345,8 @@
     /**
      * Filter the environments array to be displayed
      */
-    this.searchFilter = function (searchStringTag, portalsList) {
-      var searchString = document.getElementById(searchStringTag).value.toLowerCase();
+    this.searchFilter = function (searchStringId, portalsList) {
+      var searchString = document.getElementById(searchStringId).value.toLowerCase();
       if('' == searchString) {
         visiblePortals = portalsList;
         this.drawPortals(this.guiDiv, this.visibleEnvironmentsId, visiblePortals);
@@ -358,18 +390,50 @@
       this.drawPortals(this.guiDiv, this.visibleEnvironmentsId, visiblePortals);
     }
 
+    this.refreshData = function () {
+      getLoggedInUserInfo();
+      getUsers();
+      getPortals();
+      getBookings();
+    }
+
+    this.setDataRefreshState = function (dataRefreshStateId) {
+      var intervalCheckbox = document.getElementById(dataRefreshStateId);
+      var interval = this.dataRefreshSeconds;
+      if(intervalCheckbox.checked) {
+        if(isNaN(parseFloat(interval)) || !isFinite(interval)) {
+          alert('Error: ' + interval + ' is not a number');
+          intervalCheckbox.checked = false;
+          return;
+        }
+        else if(parseInt(interval) < 5 || parseInt(interval) > 360) {
+          alert('Erro: the interval is out of range (30 < ' + interval + ' < 360)');
+          intervalCheckbox.checked = false;
+          return;
+        }
+        interval.disabled = true;
+        this.dataRefreshInterval = setInterval(this.refreshData, interval * 1000);
+      }
+      else {
+        interval.disabled = false;
+        clearInterval(this.dataRefreshInterval);
+        this.dataRefreshInterval = null;
+      }
+    }
+
     //createInput(id, name, style, type, actiontype, onaction, value)
     this.drawSearchTool = function (targetDiv) {
       var table = document.createElement('table');
       var tr = document.createElement('tr');
       var td = document.createElement('td');
-      var inputSearch = createInput('searchFilter', null, null, null, 'onkeyup', 'javascript:gui.searchFilter(\'searchFilter\', portals);', null);
+      var inputSearch = createInput(this.searchFilterId, null, null, null, 'onkeyup', 'javascript:gui.searchFilter(\'' + this.searchFilterId + '\', portals);', null);
       var inputSearchLabel = document.createElement('label');
-      inputSearchLabel.setAttribute('for', 'searchFilter');
+      inputSearchLabel.setAttribute('for', this.searchFilterId);
       inputSearchLabel.innerHTML = 'Search filter: ';
-      var inputRefresh = createInput('searchRefreshState', null, null, 'checkbox', 'onclick', 'javascript:gui.setSearchRefreshState();', '1');
+      var inputRefresh = createInput(this.dataRefreshStateId, null, null, 'checkbox', 'onclick', 'javascript:gui.setDataRefreshState(\'' + this.dataRefreshStateId + '\');', '1');
+      inputRefresh.setAttribute('checked', 'checked');
       var inputRefreshLabel = document.createElement('label');
-      inputRefreshLabel.setAttribute('for', 'searchRefreshState');
+      inputRefreshLabel.setAttribute('for', this.dataRefreshStateId);
       inputRefreshLabel.innerHTML = 'Sync with server every 10 seconds';
       td.appendChild(inputSearchLabel);
       td.appendChild(inputSearch);
@@ -381,6 +445,7 @@
       tr.appendChild(td);
       table.appendChild(tr);
       document.getElementById(targetDiv).appendChild(table);
+      this.setDataRefreshState(this.dataRefreshStateId);
     }
 
     /**
@@ -392,21 +457,34 @@
       }
       this.beginDrawing();
 
-      this.drawLoginInfo(this.guiDiv);
-      this.drawSearchTool(this.guiDiv);
+      if(null == document.getElementById(this.loggedInUserId)) {
+        this.drawLoginInfo(this.guiDiv);
+      }
+      if(null == document.getElementById(this.dataRefreshStateId)) {
+        this.drawSearchTool(this.guiDiv);
+      }
       this.drawOwnBookedPortals(this.guiDiv);
-      this.drawAllPortals(this.guiDiv);
+      // searchFilter() will call drawPortals()
+      // with any eventual search-filter already
+      // entered by the user
+      this.searchFilter(this.searchFilterId, portals);
 
       this.finishDrawing();
     }
+
+    /**
+     * Starts the lifecycle of the GUI,
+     * alias of this.refreshData()
+     */
+    this.start = function () {
+      this.refreshData();
+    }
+
   }
 
   var session_id = getCookie('axis-home');
   if(null != session_id) {
-    getLoggedInUserInfo();
-    getUsers();
-    getPortals();
-    getBookings();
+    gui.start();
   }
   else {
     gui.drawLogin(gui.guiDiv);

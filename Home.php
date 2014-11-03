@@ -139,7 +139,7 @@ class Booking {
 
 
 class Home {
-  private $fake_ldap = true;
+  private $fake_ldap = false;
   private $session_time = 604800; // one week
   private $cookie_name = COOKIE_NAME;
   private $mysql_host = MYSQL_HOST;
@@ -596,74 +596,4 @@ elseif(isset($_POST['action']) && $_POST['action'] == 'do_logout') {
   }
   header("Location: ./");
 }
-//DISABLED SECTION
-/*elseif(false || !isset($_COOKIE['axis-home']) || empty($_COOKIE['axis-home'])) {
-  printf($html_header);
-?>
-<form method="post" action="">
-<input name="action" type="hidden" value="do_login" />
-<table>
-  <tr>
-    <td>user:</td>
-    <td><input name="username" "type="text" value="" /></td>
-    <td rowspan="2"><input style="height:100%;" type="submit" value="Login!" /></td>
-  </tr>
-  <tr>
-    <td>pass:</td>
-    <td><input name="password" type="password" value="" /></td>
-  </tr>
-</table>
-</form>
-<?
-  printf($html_footer);
-  exit;
-}
-//DISABLED SECTION
-elseif(false) {
-  printf("%sLogged in as %s\n", $html_header, $home->find_user_full_name($home->get_username()));
-  printf("<script type=\"text/javascript\">\n\t<!--\n\tusername = \"%s\"\n\t-->\n</script>\n", $home->get_username());
-?>
-<form method="post" action="">
-  <input name="action" type="hidden" value="do_logout" />
-  <input type="submit" value="Logout!">
-</form>
-<?
-  //get all portals
-  $portals = $home->get_portals_array_with_bookings();
-  printf("<table class=\"main_table\" style=\"width: 100%%, height: 100%%\">\n");
-  //list in a nice table-like view:
-  //    -green are bookable
-  //    -blue are the booked ones by self
-  //    -yellow are booked by others
-  //    -red are overbooked
-  //    -gray are broken or disabled
-  $table_print = "\t</tr>\n\t<tr>\n";
-  $table_pointer = "";
-  printf("\t<tr>\n");
-  for($i = 0; $i < count($portals); $i++) {
-    if($i % 5 == 0) {
-      printf("%s", $table_pointer);
-      $table_pointer = &$table_print;
-    }
-    $book_user_id = $portals[$i]->get_booked_user();
-    $is_booked = $book_user_id != null ? true : false;
-    $book_username = $is_booked ? $home->find_username_from_user_id($book_user_id) : null;
-    $is_own = $book_username == $home->get_username();
-    $book_full_user_name = "";
-    if($is_booked) {
-      $book_full_user_name = $home->find_user_full_name($book_username);
-    }
-    // TODO: fix overdue (red color)
-    //$is_overdue = 
-    printf("\t\t<td class=\"main_table_td\">\n\t\t\t<table border=\"0\" class=\"env_box %s\">\n", ($is_booked ? ($is_own ? 'blue' : 'orange') : 'green'));
-    printf("\t\t\t\t<tr>\n\t\t\t\t\t<td colspan=\"2\" class=\"env_name\">\n\t\t\t\t\t\t%s\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n", $portals[$i]->get_name());
-    printf("\t\t\t\t<tr>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t%s\n\t\t\t\t\t</td>\n", $portals[$i]->get_host(0));
-    printf("\t\t\t\t\t<td rowspan=\"3\" class=\"centered\">\n\t\t\t\t\t\t<input type=\"button\" value=\"Book!\" />\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n", $portals[$i]->get_booked_user());
-    printf("\t\t\t\t<tr>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t%s\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n", ($portals[$i]->get_host(1)?$portals[$i]->get_host(1):'&nbsp;'));
-    printf("\t\t\t\t<tr>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t%s\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n", ($is_booked ? $book_full_user_name : '&nbsp;'));
-    printf("\t\t\t</table>\n\t\t</td>\n");
-  }
-  printf("\t</tr>\n</table>\n");
-  printf($html_footer);
-}
-*/
+

@@ -6,7 +6,7 @@
  */
 define('MYSQL_HOST', 'localhost');
 define('MYSQL_USERNAME', 'root');
-define('MYSQL_PASSWORD', 'rootpass02');
+define('MYSQL_PASSWORD', 'admin');
 define('MYSQL_PORT', '3306');
 define('DATABASE_NAME', 'devicemanagement');
 define('USERS_TABLE', 'users');
