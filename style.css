@@ -1,8 +1,25 @@
 html, body {
-	color: rgb(51, 102, 204);
-	font-size: 13px;
-	font-family: verdana,arial,helvetica,sans-serif;
-	background: white;
+  color: rgb(51, 102, 204);
+  font-size: 13px;
+  font-family: verdana,arial,helvetica,sans-serif;
+  background: white;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: url('bkg.png') repeat center center;
+}
+
+.gui {
+  padding: 0;
+  margin: 0;
+}
+
+.sectionTitle {
+  font-size: 2.5em;
+  font-weight: bold;
+  padding-left: 1em;
 }
 
 .centered {
@@ -51,38 +68,38 @@ html, body {
 }
 
 input[type=text], input[type=input], input[type=password], select, .cool {
-	background-color: rgba(230, 230, 230, 0.1);
-	border:none;
-	border-bottom: solid 1px rgb(51, 102, 204);
-	border-radius: 5px;
+  background-color: rgba(230, 230, 230, 0.1);
+  border:none;
+  border-bottom: solid 1px rgb(51, 102, 204);
+  border-radius: 5px;
 }
 input[type=text]:hover, input[type=input]:hover, input.coolButton:hover {
-	background-color: rgba(230, 230, 230, 0.5);
+  background-color: rgba(230, 230, 230, 0.5);
 }
 input[type=text]:active, input[type=input]:active, input.coolButton:active {
-	background-color: rgba(230, 230, 230, 0.8);
+  background-color: rgba(230, 230, 230, 0.8);
 }
 input.coolInput {
-	color: black;
-	font-family: helvetica;
-	border-top: none;
-	border-right: none;
-	border-bottom: solid 1px red;
-	border-left: none;
+  color: black;
+  font-family: helvetica;
+  border-top: none;
+  border-right: none;
+  border-bottom: solid 1px red;
+  border-left: none;
 }
 input[type=button], input[type=submit], input.coolButton, input[type=button]:active, input[type=submit]:active, input.coolButton:active {
-	background-color: rgba(230, 230, 230, 0.3);
-	border:none;
-	border: solid 1px rgb(51, 102, 204);
-	border-radius: 5px;
-	color: rgb(51, 102, 204);
-	font-weight: bold;
-	box-shadow: 1px 1px 2px gray;
-	margin: .2em;
+  background-color: rgba(230, 230, 230, 0.3);
+  border:none;
+  border: solid 1px rgb(51, 102, 204);
+  border-radius: 5px;
+  color: rgb(51, 102, 204);
+  font-weight: bold;
+  box-shadow: 1px 1px 2px gray;
+  margin: .2em;
 }
 input[type=button]:hover, input.coolButton:hover {
-	background-color: rgba(230, 230, 230, 0.5);
+  background-color: rgba(230, 230, 230, 0.5);
 }
 input[type=button]:active, input.coolButton:active {
-	background-color: rgba(230, 230, 230, 0.8);
+  background-color: rgba(230, 230, 230, 0.8);
 }

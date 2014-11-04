@@ -569,16 +569,19 @@ class Home {
   /**
    * Returns a Portal object
    */
-  public function get_environment_by_name($name) {
+  public function get_environment_by_name($environment_name) {
     try {
-      if(null == $name) {
-        throw new Exception('No environment name given');
+      if(null == $environment_name) {
+        throw new Exception('Missing environment name argument');
       }
-      $result = $this->query(sprintf("call find_environment_by_name('%s')", $name), true);
-      $hosts = explode(',', $result[0]['ip']);
-      $environment = new Portal($result[0]['id'],
-                           $result[0]['name'],
-                           $hosts);
+      $result = $this->query(sprintf("call find_environment_by_name('%s')", $environment_name), true);
+      $environment = null;
+      if(count($result) > 0) {
+        $hosts = explode(',', $result[0]['ip']);
+        $environment = new Portal($result[0]['id'],
+                             $result[0]['name'],
+                             $hosts);
+      }
       return $environment;
     } catch(Exception $e) {
       throw $e;
@@ -588,15 +591,18 @@ class Home {
   /**
    * Returns a Booking object
    */
-  public function get_booking_by_environment_name($name) {
+  public function get_booking_by_environment_name($environment_name) {
     try {
-      if(null == $name) {
-        throw new Exception('No environment name given');
+      if(null == $environment_name) {
+        throw new Exception('Missing environment name argument');
       }
-      $result = $this->query(sprintf("call find_booking_by_environment_name('%s')", $name), true);
-      $booking = new Booking($result[0]['user_id'],
-                           $result[0]['portal_id'],
-                           $result[0]['bookDate']);
+      $result = $this->query(sprintf("call find_booking_by_environment_name('%s')", $environment_name), true);
+      $booking = null;
+      if(count($result) > 0) {
+        $booking = new Booking($result[0]['user_id'],
+                               $result[0]['portal_id'],
+                               $result[0]['book_date']);
+      }
       return $booking;
     } catch(Exception $e) {
       throw $e;
@@ -607,13 +613,15 @@ class Home {
    * Check if a given user has booked a given environment
    */
   public function get_build_permittion($username, $environment_name) {
+    if(empty($username) || empty($environment_name)) {
+      throw new Exception('Missing username or/and environment name argument');
+    }
     $environment = $this->get_environment_by_name($environment_name);
     if(!empty($environment)) {
       $booking = $this->get_booking_by_environment_name($environment_name);
-      if(!empty($booking) &&
-         !empty($username)) {
+      if(!empty($booking)) {
         $user_id = $this->find_user_id($username);
-        if($booking->user_id == $user_id) {
+        if($booking->get_user_id() == $user_id) {
           return true;
         }
       }
@@ -627,7 +635,7 @@ class Home {
   public function book($user_id, $environment_id) {
     try {
       if((empty($user_id) && $user_id != 0) || (empty($environment_id) && $environment_id != 0)) {
-        throw new Exception('No user ID and/or environment ID given');
+        throw new Exception('Missing user ID and/or environment ID argument');
       }
       $result = $this->query(sprintf("call book('%s', '%s')", $user_id, $environment_id), true);
     } catch(Exception $e) {

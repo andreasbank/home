@@ -163,35 +163,61 @@
   /**
    * Book an environment
    */
-  function bookEnvironment(user_id, portal_id) {
+  function bookEnvironment(userId, portalId) {
     var request = new XMLHttpRequest();
     var theAjaxScript = 'api.php';
-    var theAjaxString = 'action=doBook&user_id=' + user_id + '&environment_id=' + portal_id;
+    var theAjaxString = 'action=doBook&user_id=' + userId + '&environment_id=' + portalId;
     request.open('POST', theAjaxScript, false);
     request.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-    // TODO: fix a spinner!!!
-    request.send(theAjaxString);
-    if (request.status !== 200 || request.responseText.indexOf('Error')>=0) {
-      alert('Error:\n\n'+request.responseText);
+    request.onreadystatechange=function() {
+      if(request.readyState==4){
+        if (request.status !== 200 || request.responseText.indexOf('Error')>=0) {
+          alert('Error:\n\n'+request.responseText);
+        }
+        gui.refreshData();
+      }
     }
-    refreshData();
+    request.send(theAjaxString);
   };
 
   /**
    * Unbook an environment
    */
-  function unbookEnvironment() {
+  function unbookEnvironment(portalId) {
     var request = new XMLHttpRequest();
     var theAjaxScript = 'api.php';
-    var theAjaxString = 'action=doUnbook&environment_id=' + portal_id;
+    var theAjaxString = 'action=doUnbook&environment_id=' + portalId;
     request.open('POST', theAjaxScript, false);
     request.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-    // TODO: fix a spinner!!!
-    request.send(theAjaxString);
-    if (request.status !== 200 || request.responseText.indexOf('Error')>=0) {
-      alert('Error:\n\n'+request.responseText);
+    request.onreadystatechange=function() {
+      if(request.readyState==4){
+        if (request.status !== 200 || request.responseText.indexOf('Error')>=0) {
+          alert('Error:\n\n'+request.responseText);
+        }
+        gui.refreshData();
+      }
     }
-    refreshData();
+    request.send(theAjaxString);
+  };
+
+  /**
+   * Steal an environment
+   */
+  function stealEnvironment(userId, portalId) {
+    var request = new XMLHttpRequest();
+    var theAjaxScript = 'api.php';
+    var theAjaxString = 'action=doSteal&user_id=' + userId + '&environment_id=' + portalId;
+    request.open('POST', theAjaxScript, false);
+    request.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+    request.onreadystatechange=function() {
+      if(request.readyState==4){
+        if (request.status !== 200 || request.responseText.indexOf('Error')>=0) {
+          alert('Error:\n\n'+request.responseText);
+        }
+        gui.refreshData();
+      }
+    }
+    request.send(theAjaxString);
   };
 
   function Gui() {
@@ -284,20 +310,34 @@
       document.getElementById(targetDiv).appendChild(form);
     };
 
+    this.invokeSpinner = function (targetId) {
+      var target = document.getElementById(targetId);
+      target.innerHTML = 'please wait...';
+    }
+
     /**
      * Draws a given array of Portal objects ass
      * a html table.
      */
      //createInput(id, name, style, type, actiontype, onaction, value)
-    this.drawPortals = function (targetDiv, newId, portalsToDraw) {
+    this.drawPortals = function (sectionTitle, targetDiv, newId, portalsToDraw) {
+    var nrOfColumns = 5;
       var tableEnvironments = null;
       var trEnvironments = document.createElement('tr');
       var tdEnvironment = null;
       for(var i = 0; i < portalsToDraw.length; i++) {
-        if(i % 5 == 0) {
+        if(i % nrOfColumns == 0) {
           if(null == tableEnvironments) {
             tableEnvironments = document.createElement('table');
             tableEnvironments.setAttribute('id', newId);
+            var sectionTitleTr = document.createElement('tr');
+            var sectionTitleTd = document.createElement('td');
+            sectionTitleTd.setAttribute('class', 'sectionTitle');
+            sectionTitleTd.setAttribute('colspan', nrOfColumns);
+            sectionTitleTd.innerHTML = sectionTitle;
+            sectionTitleTr.appendChild(sectionTitleTd);
+            tableEnvironments.appendChild(sectionTitleTr);
+            //tableEnvironments.setAttribute('border', '1');
           }
           else {
             tableEnvironments.appendChild(trEnvironments);
@@ -307,6 +347,7 @@
         tdEnvironment = document.createElement('td');
         tdEnvironment.setAttribute('class', 'main_table_td');
         var table = document.createElement('table');
+        table.setAttribute('id', newId + '-environment-' + portalsToDraw[i].id);
         table.setAttribute('class', 'env_box booked' + (null != portalsToDraw[i].getBooking() ? (portalsToDraw[i].isOwnBooking() ? '_own' : '') : '_none'));
         var tr = document.createElement('tr');
         var td = document.createElement('td');
@@ -331,14 +372,14 @@
         var inputBook = null;
         if(null != portalsToDraw[i].getBooking()) {
           if(portalsToDraw[i].isOwnBooking()) {
-            inputBook = createInput(null, null, null, 'button', 'onclick', 'javascript:bookEnvironment(' + loggedInUser.id + ', ' + portalsToDraw[i].id + ')', 'Return!');
+            inputBook = createInput(null, null, null, 'button', 'onclick', 'javascript:gui.invokeSpinner(\'' + newId + '-environment-' + portalsToDraw[i].id + '\'); unbookEnvironment(' + portalsToDraw[i].id + ');', 'Return!');
           }
           else {
-            inputBook = createInput(null, null, null, 'button', 'onclick', 'javascript:bookEnvironment(' + loggedInUser.id + ', ' + portalsToDraw[i].id + ')', 'Steal!');
+            inputBook = createInput(null, null, null, 'button', 'onclick', 'javascript:gui.invokeSpinner(\'' + newId + '-environment-' + portalsToDraw[i].id + '\'); stealEnvironment(' + loggedInUser.id + ', ' + portalsToDraw[i].id + ');', 'Steal!');
           }
         }
         else {
-          inputBook = createInput(null, null, null, 'button', 'onclick', 'javascript:bookEnvironment(' + loggedInUser.id + ', ' + portalsToDraw[i].id + ')', 'Book!');
+          inputBook = createInput(null, null, null, 'button', 'onclick', 'javascript:gui.invokeSpinner(\'' + newId + '-environment-' + portalsToDraw[i].id + '\'); bookEnvironment(' + loggedInUser.id + ', ' + portalsToDraw[i].id + ');', 'Book!');
         }
         td = document.createElement('td');
         td.setAttribute('rowspan', '2');
@@ -375,7 +416,7 @@
      * in user has booked ass a html table.
      */
     this.drawOwnBookedPortals = function (targetDiv) {
-      this.drawPortals(targetDiv, this.ownEnvironmentsId, findBookedOwnPortals());
+      this.drawPortals('Booked portals', targetDiv, this.ownEnvironmentsId, findBookedOwnPortals());
     };
 
     /**
@@ -384,17 +425,18 @@
      */
     this.drawAllPortals = function (targetDiv) {
       visiblePortals = portals;
-      this.drawPortals(targetDiv, this.visibleEnvironmentsId, visiblePortals);
+      this.drawPortals('Available portals', targetDiv, this.visibleEnvironmentsId, visiblePortals);
     };
 
     /**
      * Filter the environments array to be displayed
      */
     this.searchFilter = function (searchStringId, portalsList) {
+      var availablePortalsString = 'Available portals';
       var searchString = document.getElementById(searchStringId).value.toLowerCase();
       if('' == searchString) {
         visiblePortals = portalsList;
-        this.drawPortals(this.guiDiv, this.visibleEnvironmentsId, visiblePortals);
+        this.drawPortals(availablePortalsString, this.guiDiv, this.visibleEnvironmentsId, visiblePortals);
         return;
       }
 
@@ -432,7 +474,7 @@
           }
         }
       }
-      this.drawPortals(this.guiDiv, this.visibleEnvironmentsId, visiblePortals);
+      this.drawPortals(availablePortalsString, this.guiDiv, this.visibleEnvironmentsId, visiblePortals);
     }
 
     this.refreshData = function () {
@@ -507,7 +549,7 @@
         return;
       }
       this.beginDrawing();
-
+http://localhost/home/api.php?action=doBook&user_id=0&environment_id=28
       if(null == document.getElementById(this.loggedInUserId)) {
         this.drawLoginInfo(this.guiDiv);
       }
