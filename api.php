@@ -103,14 +103,14 @@ case 'doUnbook':
   }
   break;
 
-case 'getBuildPermittion':
+case 'getBuildPermission':
   if(isset($_GET['username']) && isset($_GET['environment_name'])) {
     $_POST['username'] = $_GET['username'];
     $_POST['environment_name'] = $_GET['environment_name'];
   }
-  $buildPermittion = $home->get_build_permittion($_POST['username'], $_POST['environment_name']);
+  $buildPermission = $home->get_build_permission($_POST['username'], $_POST['environment_name']);
   $result = sprintf("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
-  $result = sprintf("%s<buildPermittion>%s</buildPermittion>\n", $result, $buildPermittion ? 'Yes' : 'No');
+  $result = sprintf("%s<buildPermission>%s</buildPermission>\n", $result, $buildPermission ? 'Yes' : 'No');
   break;
 
 case 'doLogin':

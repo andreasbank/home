@@ -612,7 +612,7 @@ class Home {
   /**
    * Check if a given user has booked a given environment
    */
-  public function get_build_permittion($username, $environment_name) {
+  public function get_build_permission($username, $environment_name) {
     if(empty($username) || empty($environment_name)) {
       throw new Exception('Missing username or/and environment name argument');
     }

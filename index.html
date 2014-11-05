@@ -290,6 +290,7 @@
      * Draws info about the logged in user.
      */
     this.drawLoginInfo = function (targetDiv) {
+      var target = document.getElementById(targetDiv);
       var form = createForm('post', 'api.php');
       var p = document.createElement('p');
       var span = document.createElement('span');
@@ -307,11 +308,27 @@
       form.appendChild(p);
       form.appendChild(inputAction);
       form.appendChild(inputLogout);
-      document.getElementById(targetDiv).appendChild(form);
+      var inputTeam = document.createElement('select');
+      inputTeam.setAttribute('id', 'inputTeam');
+      inputTeam.setAttribute('onchange', 'javascript:teamChanged(loggedInUser.id)');
+      // dummy teams array
+      var teams = new Array(
+        'Awesome',
+        'Green',
+        'Agda'
+      );
+      for(var i = 0; i < teams.length; i++) {
+        var option = document.createElement('option');
+        option.setAttribute('value', teams[i]);
+        option.innerHTML = teams[i];
+        inputTeam.appendChild(option);
+      }
+      target.appendChild(form);
+      target.appendChild(inputTeam);
     };
 
     this.invokeSpinner = function (targetId) {
-      var target = document.getElementById(targetId);
+      target = document.getElementById(targetId);
       target.innerHTML = 'please wait...';
     }
 
